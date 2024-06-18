@@ -1,14 +1,14 @@
 const { Document, Packer, Paragraph, TextRun, Header, AlignmentType, ImageRun } = require('docx');
 const fs = require('fs');
-const path = require('path'); // Thêm thư viện path để xử lý đường dẫn
-const os = require('os'); // Thêm thư viện os để lấy đường dẫn thư mục Downloads
+const path = require('path');
+const tmp = require('tmp'); // Thêm thư viện tmp để xử lý tệp tạm thời
+const os = require('os');
 
 const Questions = require("../Models/Questions");
 const Exam = require('../Models/Exams');
-
 const { format, addHours } = require('date-fns');
 
-const currentDateTime = addHours(new Date(), 7); // Thêm 7 giờ để đổi múi giờ +7
+const currentDateTime = addHours(new Date(), 7);
 const formattedDate = format(currentDateTime, 'dd-MM-yyyy');
 
 const shuffleArray = (array) => {
@@ -22,7 +22,7 @@ const shuffleArray = (array) => {
 const examsController = {
     create: async (req, res) => {
         try {
-            const { selectedSubjects, numExams, title } = req.body; // Loại bỏ savePath từ req.body vì chúng ta sẽ tự động xác định
+            const { selectedSubjects, numExams, title } = req.body;
 
             let allQuestions = [];
 
@@ -52,19 +52,15 @@ const examsController = {
                 exams.push(examQuestions);
             }
 
-            // Generate exams
-            // Save exams to the database
             const savedExams = [];
             for (let i = 0; i < numExams; i++) {
                 const newExam = new Exam({
                     title: `${title} - Đề số: ${i + 1}`,
                     questions: exams[i],
                 });
-                // const savedExam = await newExam.save();
                 savedExams.push(newExam);
             }
 
-            // Create Word document
             const doc = new Document({
                 sections: savedExams.map((exam, index) => ({
                     headers: {
@@ -91,7 +87,6 @@ const examsController = {
                             ],
                         }),
                     },
-
                     children: [
                         new Paragraph({
                             alignment: AlignmentType.CENTER,
@@ -198,15 +193,18 @@ const examsController = {
                 })),
             });
 
-            // Save Word document
             const buffer = await Packer.toBuffer(doc);
-            const fileName = `De-thi-chuyen-vien-${formattedDate}.docx`; // Tạo tên file dựa trên thời gian
-            const downloadsPath = path.join(os.homedir(), 'Downloads'); // Xác định đường dẫn thư mục Downloads
-            const filePath = path.join(downloadsPath, fileName); // Tạo đường dẫn lưu file
+            const tmpFile = tmp.fileSync({ postfix: '.docx' }); // Tạo tệp tạm thời với đuôi .docx
+            fs.writeFileSync(tmpFile.name, buffer);
 
-            fs.writeFileSync(filePath, buffer);
+            res.download(tmpFile.name, `De-thi-chuyen-vien-${formattedDate}.docx`, (err) => {
+                if (err) {
+                    console.error('Error downloading file:', err);
+                    res.status(500).send({ message: 'Error downloading file', error: err });
+                }
 
-            res.status(200).send({ message: 'Exam created and exported successfully', exams: savedExams, filePath });
+                tmpFile.removeCallback(); // Xóa tệp tạm thời sau khi gửi xong
+            });
         } catch (err) {
             console.error(err);
             res.status(500).send({ message: 'Error creating exam', error: err });
