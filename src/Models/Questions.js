@@ -14,6 +14,7 @@ const QuestionSchema = new Schema(
     option3: { type: String },
     option4: { type: String },
     correct_option: { type: Number, required: true },
+    reverse: { type: Boolean},
     image_filename: { type: String }, // Tên tệp ảnh trong GridFS
   },
   {

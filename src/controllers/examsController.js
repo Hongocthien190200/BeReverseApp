@@ -35,12 +35,17 @@ const examsController = {
             for (let i = 0; i < numExams; i++) {
                 const shuffledQuestions = shuffleArray([...allQuestions]);
                 const examQuestions = shuffledQuestions.map(question => {
-                    const options = shuffleArray([
+                    let options = [
                         question.option1,
                         question.option2,
                         question.option3,
                         question.option4,
-                    ]).filter(Boolean);
+                    ].filter(Boolean);
+
+                    // Check the reverse property and shuffle options if reverse is false
+                    if (!question.reverse) {
+                        options = shuffleArray(options);
+                    }
                     return {
                         question_id: question._id,
                         question_text: question.question_text,

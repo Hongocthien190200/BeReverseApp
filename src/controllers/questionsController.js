@@ -44,6 +44,14 @@ const questionController = {
       if (err) {
         return res.status(500).json({ message: "Upload failed", error: err });
       }
+      let reverse = false;
+      const listoptions = [req.body.option1, req.body.option2, req.body.option3,req.body.option4]
+      const checkReverse = listoptions.find(function (option){
+        return option ==="Tất cả đáp án đều đúng" || option ==="Cả A và B đều đúng"|| option ==="Tất cả đáp án đều sai";
+      })
+      if(checkReverse){
+        reverse = true;
+      }
       const {
         subject_id,
         question_text,
@@ -63,6 +71,7 @@ const questionController = {
         option3,
         option4,
         correct_option,
+        reverse,
         image_filename,
       });
       try {
