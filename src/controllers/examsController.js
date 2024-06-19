@@ -51,7 +51,6 @@ const examsController = {
                 });
                 exams.push(examQuestions);
             }
-
             const savedExams = [];
             for (let i = 0; i < numExams; i++) {
                 const newExam = new Exam({
@@ -62,135 +61,151 @@ const examsController = {
             }
 
             const doc = new Document({
-                sections: savedExams.map((exam, index) => ({
-                    headers: {
-                        default: new Header({
-                            children: [
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: 'TRUNG TÂM ỨNG PHÓ SỰ CỐ MÔI TRƯỜNG VIỆT NAM',
-                                            size: 20,
-                                        }),
-                                        new TextRun({
-                                            text: '10E Đường Bùi Văn Ba, Phường Tân Thuận Đông, Quận 7, Thành Phố Hồ Chí Minh',
-                                            size: 20,
-                                            break: 1,
-                                        }),
-                                        new TextRun({
-                                            text: 'Hotline: 1800 6558 / Web: sosmoitruong.com / Di động: 0945440022 / Email: phucle@sosmoitruong.com',
-                                            size: 20,
-                                            break: 1,
-                                        }),
-                                    ],
-                                }),
-                            ],
-                        }),
-                    },
-                    children: [
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                                new TextRun({
-                                    text: 'BÀI KIỂM TRA',
-                                    bold: true,
-                                    size: 26,
-                                    break: 1,
-                                }),
-                                new TextRun({
-                                    text: 'NHÂN SỰ THỬ VIỆC LÊN TẬP SỰ',
-                                    bold: true,
-                                    size: 26,
-                                    break: 1,
-                                }),
-                            ],
-                        }),
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: 'Họ và tên:______________________________________Nam/Nữ:____________',
-                                    size: 26,
-                                    break: 1,
-                                }),
-                                new TextRun({
-                                    text: 'Ngày sinh:_________________________________________________________',
-                                    size: 26,
-                                    break: 1,
-                                }),
-                                new TextRun({
-                                    text: 'Phòng ban:_________________________________________________________',
-                                    size: 26,
-                                    break: 1,
-                                }),
-                                new TextRun({
-                                    text: 'Chức vụ:___________________________________________________________',
-                                    size: 26,
-                                    break: 1,
-                                }),
-                                new TextRun({
-                                    text: 'ĐTDĐ:______________________________________________________________',
-                                    break: 1,
-                                    size: 26,
-                                }),
-                            ],
-                        }),
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: `Mã đề: ${index + 1}`,
-                                    bold: true,
-                                    size: 26,
-                                    break: 1,
-                                }),
-                            ],
-                        }),
-                        ...exam.questions.flatMap((question, qIndex) => {
-                            const questionParagraphs = [
-                                new Paragraph({
-                                    spacing: { line: 276 },
-                                    children: [
-                                        new TextRun({
-                                            text: `${qIndex + 1}. ${question.question_text}`,
-                                            bold: true,
-                                            size: 26,
-                                        }),
-                                    ],
-                                }),
-                            ];
-
-                            if (question.image_filename) {
-                                const imagePath = path.resolve(__dirname, '../uploads', question.image_filename);
-                                if (fs.existsSync(imagePath)) {
-                                    questionParagraphs.push(new Paragraph({
+                sections: savedExams.map((exam, index) => {
+                    const answerKey = exam.questions.map((question, qIndex) => {
+                        return `${qIndex + 1}.${String.fromCharCode(65 + question.correct_option - 1)}`;
+                    }).join(', ');
+                    return {
+                        headers: {
+                            default: new Header({
+                                children: [
+                                    new Paragraph({
                                         children: [
-                                            new ImageRun({
-                                                data: fs.readFileSync(imagePath),
-                                                transformation: {
-                                                    width: "256",
-                                                    height: "144",
-                                                },
+                                            new TextRun({
+                                                text: 'TRUNG TÂM ỨNG PHÓ SỰ CỐ MÔI TRƯỜNG VIỆT NAM',
+                                                size: 20,
+                                            }),
+                                            new TextRun({
+                                                text: '10E Đường Bùi Văn Ba, Phường Tân Thuận Đông, Quận 7, Thành Phố Hồ Chí Minh',
+                                                size: 20,
+                                                break: 1,
+                                            }),
+                                            new TextRun({
+                                                text: 'Hotline: 1800 6558 / Web: sosmoitruong.com / Di động: 0945440022 / Email: phucle@sosmoitruong.com',
+                                                size: 20,
+                                                break: 1,
                                             }),
                                         ],
-                                    }));
+                                    }),
+                                ],
+                            }),
+                        },
+                        children: [
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({
+                                        text: 'BÀI KIỂM TRA',
+                                        bold: true,
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                    new TextRun({
+                                        text: 'NHÂN SỰ THỬ VIỆC LÊN TẬP SỰ',
+                                        bold: true,
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                ],
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: 'Họ và tên:______________________________________Nam/Nữ:____________',
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                    new TextRun({
+                                        text: 'Ngày sinh:_________________________________________________________',
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                    new TextRun({
+                                        text: 'Phòng ban:_________________________________________________________',
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                    new TextRun({
+                                        text: 'Chức vụ:___________________________________________________________',
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                    new TextRun({
+                                        text: 'ĐTDĐ:______________________________________________________________',
+                                        break: 1,
+                                        size: 26,
+                                    }),
+                                ],
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: `Mã đề: ${index + 1}`,
+                                        bold: true,
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                ],
+                            }),
+                            ...exam.questions.flatMap((question, qIndex) => {
+                                const questionParagraphs = [
+                                    new Paragraph({
+                                        spacing: { line: 276 },
+                                        children: [
+                                            new TextRun({
+                                                text: `${qIndex + 1}. ${question.question_text}`,
+                                                bold: true,
+                                                size: 26,
+                                            }),
+                                        ],
+                                    }),
+                                ];
+
+                                if (question.image_filename) {
+                                    const imagePath = path.resolve(__dirname, '../uploads', question.image_filename);
+                                    if (fs.existsSync(imagePath)) {
+                                        questionParagraphs.push(new Paragraph({
+                                            children: [
+                                                new ImageRun({
+                                                    data: fs.readFileSync(imagePath),
+                                                    transformation: {
+                                                        width: "256",
+                                                        height: "144",
+                                                    },
+                                                }),
+                                            ],
+                                        }));
+                                    }
                                 }
-                            }
 
-                            const optionParagraphs = question.options.map((option, oIndex) => (
-                                new Paragraph({
-                                    spacing: { line: 276 },
-                                    children: [
-                                        new TextRun({
-                                            text: `${String.fromCharCode(65 + oIndex)}. ${option}`,
-                                            size: 26,
-                                        }),
-                                    ],
-                                })
-                            ));
+                                const optionParagraphs = question.options.map((option, oIndex) => (
+                                    new Paragraph({
+                                        spacing: { line: 276 },
+                                        children: [
+                                            new TextRun({
+                                                text: `${String.fromCharCode(65 + oIndex)}. ${option}`,
+                                                size: 26,
+                                            }),
+                                        ],
+                                    })
+                                ));
 
-                            return questionParagraphs.concat(optionParagraphs);
-                        }),
-                    ],
-                })),
+                                return questionParagraphs.concat(optionParagraphs);
+                            }),
+                            new Paragraph({
+                                spacing: { line: 276 },
+                                children: [
+                                    new TextRun({
+                                        text: `Đáp án: ${answerKey}`,
+                                        bold: true,
+                                        size: 26,
+                                        break: 1,
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }
+                }),
             });
 
             const buffer = await Packer.toBuffer(doc);
