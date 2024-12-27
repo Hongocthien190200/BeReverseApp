@@ -25,6 +25,11 @@ mongoose
     console.log("CONNECT TO MONGODB");
   })
   .catch((err) => console.log(err));
+
+// const db = require('./src/config/db');
+// //conect to DB
+// db.connect();
+
 const port = 4000;
 
 app.use(cors());

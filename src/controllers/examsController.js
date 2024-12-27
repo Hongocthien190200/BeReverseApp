@@ -1,4 +1,5 @@
 const { Document, Packer, Paragraph, TextRun, Header, AlignmentType, ImageRun } = require('docx');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const tmp = require('tmp'); // Thêm thư viện tmp để xử lý tệp tạm thời
@@ -19,20 +20,29 @@ const shuffleArray = (array) => {
     return array;
 };
 
+function getRandomQuestions(questions, num) {
+    const shuffled = [...questions]; // Tạo bản sao của mảng để không thay đổi mảng gốc
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Hoán đổi vị trí
+    }
+    return shuffled.slice(0, num); // Trả về `num` phần tử đầu tiên từ mảng đã xáo trộn
+}
 const examsController = {
     create: async (req, res) => {
         try {
             const { selectedSubjects, numExams, title } = req.body;
 
-            let allQuestions = [];
-
-            for (const subject of selectedSubjects) {
-                const questions = await Questions.find({ subject_id: subject.subjectId }).limit(subject.numQuestions).lean();
-                allQuestions.push(...questions);
-            }
-
             const exams = [];
             for (let i = 0; i < numExams; i++) {
+                let allQuestions = [];
+
+                for (const subject of selectedSubjects) {
+                    const questions = await Questions.find({ subject_id: subject.subjectId })
+                    const num = parseInt(subject.numQuestions)
+                    const randomQuestions = getRandomQuestions(questions, num)
+                    allQuestions.push(...randomQuestions);
+                }
                 const shuffledQuestions = shuffleArray([...allQuestions]);
                 const examQuestions = shuffledQuestions.map(question => {
                     let options = [
@@ -226,7 +236,6 @@ const examsController = {
                 tmpFile.removeCallback(); // Xóa tệp tạm thời sau khi gửi xong
             });
         } catch (err) {
-            console.error(err);
             res.status(500).send({ message: 'Error creating exam', error: err });
         }
     },
